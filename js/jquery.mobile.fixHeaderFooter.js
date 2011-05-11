@@ -107,7 +107,7 @@ $.fixedToolbars = (function(){
 			prevPage = ui.prevPage,
 			prevFooter = prevPage && prevPage.find( ":jqmData(role='footer')" ),
 			prevFooterMatches = prevFooter.length && prevFooter.jqmData( "id" ) === id;
-            revHasNoFooter=!(prevFooter.length >0);
+			prevHasNoFooter=!(prevFooter.length >0);
 		
 		if( id && (prevFooterMatches || prevHasNoFooter) ){
 			stickyFooter = footer;
