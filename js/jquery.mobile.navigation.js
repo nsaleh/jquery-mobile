@@ -519,7 +519,7 @@
 
 			// The absolute version of the URL passed into the function. This
 			// version of the URL may contain dialog/subpage params in it.
-			absUrl = path.stripHash( url ), // XXX_jblas: path.makeAbsolute( url ),
+			absUrl = path.makeUrlAbsolute( url );
 
 			// The absolute version of the URL minus any dialog/subpage params.
 			// In otherwords the real URL of the page to be loaded.
@@ -896,7 +896,7 @@
 			}
 
 		var type = $this.attr( "method" ),
-			url = path.clean( $this.attr( "action" ) ),
+			url = path.makeUrlAbsolute( $this.attr( "action" ), getClosestBaseUrl($this) );
 			target = $this.attr( "target" );
 
 		//external submits use regular HTTP
@@ -904,13 +904,8 @@
 			return;
 		}
 
-		//if it's a relative href, prefix href with base url
-		if( path.isRelative( url ) ) {
-			url = path.makeAbsolute( url );
-		}
-
 		$.mobile.changePage(
-			url.length && url || path.get(),
+			url,
 			{
 				type:		type.length && type.toLowerCase() || "get",
 				data:		$this.serialize(),
@@ -937,15 +932,14 @@
 	function getClosestBaseUrl( ele )
 	{
 		// Find the closest page and extract out its url.
-		var url = $( ele ).closest( ".ui-page" ).jqmData( "url" );
+		var url = $( ele ).closest( ".ui-page" ).jqmData( "url" ),
+			base = documentBase.hrefNoHash;
 
-		// If the data-url is an id instead of a path, default to using
-		// the documentBase.
 		if ( url && !path.isPath( url ) ) {
-			url = documentBase;
+			url = base;
 		}
 
-		return path.makeUrlAbsolute( ( url && !path.isPath( url ) ) ? url : documentBase, documentBase);
+		return path.makeUrlAbsolute( url || base, base);
 	}
 
 	//add active state on vclick
