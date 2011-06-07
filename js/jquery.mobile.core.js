@@ -36,16 +36,11 @@
 		//automatically load and show pages based on location.hash
 		hashListeningEnabled: true,
 
-		// TODO: deprecated - remove at 1.0
-		//automatically handle link clicks through Ajax, when possible
-		ajaxLinksEnabled: true,
+		//set default page transition - 'none' for no transitions
+		defaultPageTransition: "slide",
 
-		// TODO: deprecated - remove at 1.0
-		//automatically handle form submissions through Ajax, when possible
-		ajaxFormsEnabled: true,
-
-		//set default transition - 'none' for no transitions
-		defaultTransition: "slide",
+		//set default dialog transition - 'none' for no transitions
+		defaultDialogTransition: "pop",
 
 		//show loading message during Ajax requests
 		//if false, message will not appear, but loading classes will still be toggled on html el
@@ -120,11 +115,7 @@
 		nsNormalize: function(prop){
 			if(!prop) return;
 
-			// NOTE the spec specifies that attributes will be converted to lower case
-			//      ascii so the regex can remain simple
-			return ($.mobile.ns + prop).replace(this.normalizeRegex, function(s, capture){
-				return capture.toUpperCase();
-			});
+			return $.camelCase( $.mobile.ns + prop );
 		}
 	});
 
