@@ -755,6 +755,7 @@
 
 					//release transition lock so navigation is free again
 					releasePageTransitionLock();
+					settings.pageContainer.trigger("changepagefailed");
 				});
 			return;
 		}
@@ -781,6 +782,7 @@
 		//            to the same page.
 		if( active && active.page[0] === toPage[0] ) {
 			isPageTransitioning = false;
+			mpc.trigger( "changepage" );
 			return;
 		}
 
