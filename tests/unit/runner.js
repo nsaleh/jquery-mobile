@@ -17,15 +17,22 @@ $(function() {
 				// establish a timeout for a given suite in case of async tests hanging
 				self.testTimer = setTimeout( self.onTimeout, self.testTimeout );
 
+				// it might be a redirect with query params for push state
+				// tests skip this call and expect another
+				if( !self.frame.QUnit ) {
+					self.$frameElem.one( "load", self.onFrameLoad );
+					return;
+				}
+
 				// when the QUnit object reports done in the iframe
 				// run the onFrameDone method
 				self.frame.QUnit.done = self.onFrameDone;
 				self.frame.QUnit.testDone = self.onTestDone;
 			},
 
-			onTestDone: function( name, bad, assertCount ) {
-				QUnit.ok( !bad, name );
-				self.recordAssertions( assertCount - 1, name );
+			onTestDone: function( result ) {
+				QUnit.ok( !(result.failed > 0), result.name );
+				self.recordAssertions( result.total - result.failed, result.name );
 			},
 
 			onFrameDone: function( failed, passed, total, runtime ){

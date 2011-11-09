@@ -8,7 +8,7 @@
 
 var fakeBody = $( "<body>" ).prependTo( "html" ),
 	fbCSS = fakeBody[ 0 ].style,
-	vendors = [ "webkit", "moz", "o" ],
+	vendors = [ "Webkit", "Moz", "O" ],
 	webos = "palmGetResource" in window, //only used to rule out scrollTop
 	bb = window.blackberry; //only used to rule out box shadow, as it's filled opaque on BB
 
@@ -38,9 +38,9 @@ function baseTagTest() {
 		href = base.attr( "href" );
 	}
 
-	link = $( "<a href='testurl'></a>" ).prependTo( fakeBody );
+	link = $( "<a href='testurl' />" ).prependTo( fakeBody );
 	rebase = link[ 0 ].href;
-	base[ 0 ].href = href ? href : location.pathname;
+	base[ 0 ].href = href || location.pathname;
 
 	if ( fauxEle ) {
 		fauxEle.remove();
@@ -64,17 +64,16 @@ $.mobile.browser.ie = (function() {
 
 
 $.extend( $.support, {
-	orientation: "orientation" in window,
+	orientation: "orientation" in window && "onorientationchange" in window,
 	touch: "ontouchend" in document,
 	cssTransitions: "WebKitTransitionEvent" in window,
-	pushState: !!history.pushState,
+	pushState: "pushState" in history && "replaceState" in history,
 	mediaquery: $.mobile.media( "only all" ),
 	cssPseudoElement: !!propExists( "content" ),
+	touchOverflow: !!propExists( "overflowScrolling" ),
 	boxShadow: !!propExists( "boxShadow" ) && !bb,
 	scrollTop: ( "pageXOffset" in window || "scrollTop" in document.documentElement || "scrollTop" in fakeBody[ 0 ] ) && !webos,
-	dynamicBaseTag: baseTagTest(),
-	// TODO: This is a weak test. We may want to beef this up later.
-	eventCapture: "addEventListener" in document
+	dynamicBaseTag: baseTagTest()
 });
 
 fakeBody.remove();
@@ -108,7 +107,7 @@ $.mobile.ajaxBlacklist =
 // This simply reappends the CSS in place, which for some reason makes it apply
 if ( nokiaLTE7_3 ) {
 	$(function() {
-		$( "head link[rel=stylesheet]" ).attr( "rel", "alternate stylesheet" ).attr( "rel", "stylesheet" );
+		$( "head link[rel='stylesheet']" ).attr( "rel", "alternate stylesheet" ).attr( "rel", "stylesheet" );
 	});
 }
 

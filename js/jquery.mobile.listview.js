@@ -32,26 +32,7 @@ $.widget( "mobile.listview", $.mobile.widget, {
 			return orig + " ui-listview " + ( t.options.inset ? " ui-listview-inset ui-corner-all ui-shadow " : "" );
 		});
 
-		t.refresh();
-	},
-
-	_itemApply: function( $list, item ) {
-		var $countli = item.find( ".ui-li-count" );
-		if ( $countli.length ) {
-			item.addClass( "ui-li-has-count" );
-		}
-		$countli.addClass( "ui-btn-up-" + ( $list.jqmData( "counttheme" ) || this.options.countTheme ) + " ui-btn-corner-all" );
-
-		// TODO class has to be defined in markup
-		item.find( "h1, h2, h3, h4, h5, h6" ).addClass( "ui-li-heading" ).end()
-		.find( "p, dl" ).addClass( "ui-li-desc" ).end()
-		.find( ">img:eq(0), .ui-link-inherit>img:eq(0)" ).addClass( "ui-li-thumb" ).each(function() {
-			item.addClass( $(this).is( ".ui-li-icon" ) ? "ui-li-has-icon" : "ui-li-has-thumb" );
-		}).end()
-		.find( ".ui-li-aside" ).each(function() {
-			var $this = $(this);
-			$this.prependTo( $this.parent() ); //shift aside to front for css float
-		});
+		t.refresh( true );
 	},
 
 	_removeCorners: function( li, which ) {
@@ -69,7 +50,7 @@ $.widget( "mobile.listview", $.mobile.widget, {
 		}
 	},
 
-	_refreshCorners: function() {
+	_refreshCorners: function( create ) {
 		var $li,
 			$visibleli,
 			$topli,
@@ -77,19 +58,24 @@ $.widget( "mobile.listview", $.mobile.widget, {
 
 		if ( this.options.inset ) {
 			$li = this.element.children( "li" );
-			$visibleli = $li.not( ".ui-screen-hidden" );
-			
+			// at create time the li are not visible yet so we need to rely on .ui-screen-hidden
+			$visibleli = create?$li.not( ".ui-screen-hidden" ):$li.filter( ":visible" );
+
 			this._removeCorners( $li );
 
 			// Select the first visible li element
 			$topli = $visibleli.first()
 				.addClass( "ui-corner-top" );
 
-			$topli.add( $topli.find( ".ui-btn-inner" ) )
-				.find( ".ui-li-link-alt" )
+			$topli.add( $topli.find( ".ui-btn-inner" )
+					.not( ".ui-li-link-alt span:first-child" ) )
+                                .addClass( "ui-corner-top" )
+                                .end()
+				.find( ".ui-li-link-alt, .ui-li-link-alt span:first-child" )
 					.addClass( "ui-corner-tr" )
 				.end()
 				.find( ".ui-li-thumb" )
+					.not(".ui-li-icon")
 					.addClass( "ui-corner-tl" );
 
 			// Select the last visible li element
@@ -101,7 +87,11 @@ $.widget( "mobile.listview", $.mobile.widget, {
 					.addClass( "ui-corner-br" )
 				.end()
 				.find( ".ui-li-thumb" )
+					.not(".ui-li-icon")
 					.addClass( "ui-corner-bl" );
+		}
+		if ( !create ) {
+			this.element.trigger( "updatelayout" );
 		}
 	},
 
@@ -118,7 +108,7 @@ $.widget( "mobile.listview", $.mobile.widget, {
 			li = $list.children( "li" ),
 			counter = $.support.cssPseudoElement || !$.nodeName( $list[ 0 ], "ol" ) ? 0 : 1,
 			item, itemClass, itemTheme,
-			a, last, splittheme, countParent, icon;
+			a, last, splittheme, countParent, icon, imgParents, img;
 
 		if ( counter ) {
 			$list.find( ".ui-li-dec" ).remove();
@@ -145,6 +135,10 @@ $.widget( "mobile.listview", $.mobile.widget, {
 						theme: itemTheme
 					});
 
+					if ( ( icon != false ) && ( a.length == 1 ) ) {
+						item.addClass( "ui-li-has-arrow" );
+					}
+
 					a.first().addClass( "ui-link-inherit" );
 
 					if ( a.length > 1 ) {
@@ -154,7 +148,7 @@ $.widget( "mobile.listview", $.mobile.widget, {
 						splittheme = listsplittheme || last.jqmData( "theme" ) || o.splitTheme;
 
 						last.appendTo(item)
-							.attr( "title", last.text() )
+							.attr( "title", last.getEncodedText() )
 							.addClass( "ui-li-link-alt" )
 							.empty()
 							.buttonMarkup({
@@ -198,13 +192,46 @@ $.widget( "mobile.listview", $.mobile.widget, {
 			}
 
 			item.add( item.children( ".ui-btn-inner" ) ).addClass( itemClass );
+		}
 
-			if ( !create ) {
-				self._itemApply( $list, item );
+		$list.find( "h1, h2, h3, h4, h5, h6" ).addClass( "ui-li-heading" )
+			.end()
+
+			.find( "p, dl" ).addClass( "ui-li-desc" )
+			.end()
+
+			.find( ".ui-li-aside" ).each(function() {
+					var $this = $(this);
+					$this.prependTo( $this.parent() ); //shift aside to front for css float
+				})
+			.end()
+
+			.find( ".ui-li-count" ).each( function() {
+					$( this ).closest( "li" ).addClass( "ui-li-has-count" );
+				}).addClass( "ui-btn-up-" + ( $list.jqmData( "counttheme" ) || this.options.countTheme) + " ui-btn-corner-all" );
+
+		// The idea here is to look at the first image in the list item
+		// itself, and any .ui-link-inherit element it may contain, so we
+		// can place the appropriate classes on the image and list item.
+		// Note that we used to use something like:
+		//
+		//    li.find(">img:eq(0), .ui-link-inherit>img:eq(0)").each( ... );
+		//
+		// But executing a find() like that on Windows Phone 7.5 took a
+		// really long time. Walking things manually with the code below
+		// allows the 400 listview item page to load in about 3 seconds as
+		// opposed to 30 seconds.
+
+		imgParents = li.add( $list.find( ".ui-link-inherit" ) );
+
+		for ( pos = 0; pos < imgParents.length; pos++ ) {
+			img = imgParents.eq( pos ).children( "img" ).first();
+			if ( img.length ) {
+				img.addClass( "ui-li-thumb" ).closest( "li" ).addClass( img.is( ".ui-li-icon" ) ? "ui-li-has-icon" : "ui-li-has-thumb" );
 			}
 		}
-		
-		this._refreshCorners();
+
+		this._refreshCorners( create );
 	},
 
 	//create a string for ID/subpage url creation
@@ -237,7 +264,7 @@ $.widget( "mobile.listview", $.mobile.widget, {
 				parent = list.parent(),
 				nodeEls = $( list.prevAll().toArray().reverse() ),
 				nodeEls = nodeEls.length ? nodeEls : $( "<span>" + $.trim(parent.contents()[ 0 ].nodeValue) + "</span>" ),
-				title = nodeEls.first().text(),//url limits to first 30 chars of text
+				title = nodeEls.first().getEncodedText(),//url limits to first 30 chars of text
 				id = ( parentUrl || "" ) + "&" + $.mobile.subPageUrlKey + "=" + listId,
 				theme = list.jqmData( "theme" ) || o.theme,
 				countTheme = list.jqmData( "counttheme" ) || parentList.jqmData( "counttheme" ) || o.countTheme,
@@ -266,8 +293,12 @@ $.widget( "mobile.listview", $.mobile.widget, {
 
 		}).listview();
 
-		//on pagehide, remove any nested pages along with the parent page, as long as they aren't active
-		if( hasSubPages && parentPage.data("page").options.domCache === false ){
+		// on pagehide, remove any nested pages along with the parent page, as long as they aren't active
+		// and aren't embedded
+		if( hasSubPages &&
+			parentPage.is( ":jqmData(external-page='true')" ) &&
+			parentPage.data("page").options.domCache === false ) {
+
 			var newRemove = function( e, ui ){
 				var nextPage = ui.nextPage, npURL;
 

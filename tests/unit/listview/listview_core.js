@@ -4,11 +4,13 @@
 
 // TODO split out into seperate test files
 (function($){
+  var home = $.mobile.path.parseUrl( location.href ).pathname;
 
 	$.mobile.defaultTransition = "none";
-	module('Basic Linked list', {
+
+	module( "Basic Linked list", {
 		setup: function(){
-			$.testHelper.openPage("#basic-linked-test");
+			$.testHelper.openPage( "#basic-linked-test" );
 		}
 	});
 
@@ -48,6 +50,31 @@
 
 			function(){
 				ok($('#basic-linked-test').hasClass('ui-page-active'));
+				start();
+			}
+		]);
+	});
+
+	asyncTest( "Presence of ui-li-has- classes", function(){
+		$.testHelper.pageSequence( [
+			function() {
+				$.testHelper.openPage( "#ui-li-has-test" );
+			},
+
+			function() {
+				var page = $( ".ui-page-active" ),
+					items = page.find( "li" );
+
+				ok(  items.eq( 0 ).hasClass( "ui-li-has-count"), "First LI should have ui-li-has-count class" );
+				ok(  items.eq( 0 ).hasClass( "ui-li-has-arrow"), "First LI should have ui-li-has-arrow class" );
+				ok( !items.eq( 1 ).hasClass( "ui-li-has-count"), "Second LI should NOT have ui-li-has-count class" );
+				ok(  items.eq( 1 ).hasClass( "ui-li-has-arrow"), "Second LI should have ui-li-has-arrow class" );
+				ok( !items.eq( 2 ).hasClass( "ui-li-has-count"), "Third LI should NOT have ui-li-has-count class" );
+				ok( !items.eq( 2 ).hasClass( "ui-li-has-arrow"), "Third LI should NOT have ui-li-has-arrow class" );
+				ok(  items.eq( 3 ).hasClass( "ui-li-has-count"), "Fourth LI should have ui-li-has-count class" );
+				ok( !items.eq( 3 ).hasClass( "ui-li-has-arrow"), "Fourth LI should NOT have ui-li-has-arrow class" );
+				ok( !items.eq( 4 ).hasClass( "ui-li-has-count"), "Fifth LI should NOT have ui-li-has-count class" );
+				ok( !items.eq( 4 ).hasClass( "ui-li-has-arrow"), "Fifth LI should NOT have ui-li-has-arrow class" );
 				start();
 			}
 		]);
@@ -188,7 +215,7 @@
 	asyncTest( "changes to the read only page when hash is changed", function() {
 		$.testHelper.pageSequence([
 			function(){
-				$.testHelper.openPage("#read-only-list-test")
+				$.testHelper.openPage("#read-only-list-test");
 			},
 
 			function(){
@@ -305,10 +332,8 @@
 				$searchPage.find('input').val('at');
 				$searchPage.find('input').trigger('change');
 
-				setTimeout(function() {
-					same($searchPage.find('li.ui-screen-hidden').length, 2);
-					start();
-				}, 1000);
+				same($searchPage.find('li.ui-screen-hidden').length, 2);
+				start();
 			}
 		]);
 	});
@@ -324,13 +349,28 @@
 				$searchPage.find('input').val('a');
 				$searchPage.find('input').trigger('change');
 
-				setTimeout(function() {
-					same($searchPage.find("li[style^='display: none;']").length, 0);
-					start();
-				}, 1000);
+				same($searchPage.find("li[style^='display: none;']").length, 0);
+				start();
 			}
 		]);
 	});
+
+    asyncTest( "Filter works fine with \\W- or regexp-special-characters", function() {
+        var $searchPage = $(searchFilterId);
+        $.testHelper.pageSequence([
+            function() {
+                $.testHelper.openPage(searchFilterId);
+            },
+
+            function() {
+                $searchPage.find('input').val('*');
+                $searchPage.find('input').trigger('change');
+
+                same($searchPage.find('li.ui-screen-hidden').length, 4);
+                start();
+            }
+        ]);
+    });
 
 	test( "Refresh applies thumb styling", function(){
 		var ul = $('.ui-page-active ul');
@@ -414,7 +454,7 @@
 				$li = $page.find( "li:visible" );
 			ok($li.first().hasClass( "ui-corner-top" ), $li.length+" li elements: First visible element should have class ui-corner-top");
 			ok($li.last().hasClass( "ui-corner-bottom" ), $li.length+" li elements: Last visible element should have class ui-corner-bottom");
-		}
+		};
 
 		$.testHelper.pageSequence([
 			function() {
@@ -527,7 +567,7 @@
 
 	module("Rounded corners");
 
-	asyncTest("Top and bottom corners rounded in inset list", 20, function() {
+	asyncTest("Top and bottom corners rounded in inset list", 14, function() {
 		$.testHelper.pageSequence([
 			function() {
 				$.testHelper.openPage("#corner-rounded-test");
@@ -536,7 +576,7 @@
 			function() {
 				var ul = $('#corner-rounded-test ul');
 
-				for( var t = 0; t<5; t++){
+				for( var t = 0; t<3; t++){
 					ul.append("<li>Item " + t + "</li>");
 					ul.listview('refresh');
 					equals(ul.find(".ui-corner-top").length, 1, "There should be only one element with class ui-corner-top");
@@ -544,6 +584,14 @@
 					equals(ul.find(".ui-corner-bottom").length, 1, "There should be only one element with class ui-corner-bottom");
 					equals(ul.find("li:visible").last()[0], ul.find(".ui-corner-bottom")[0], "Last list item should have class ui-corner-bottom in list with " + ul.find("li").length + " item(s)");
 				}
+
+				ul.find( "li" ).first().hide();
+				ul.listview( "refresh" );
+				equals(ul.find("li:visible").first()[0], ul.find(".ui-corner-top")[0], "First visible list item should have class ui-corner-top");
+
+				ul.find( "li" ).last().hide();
+				ul.listview( "refresh" );
+				equals(ul.find("li:visible").last()[0], ul.find(".ui-corner-bottom")[0], "Last visible list item should have class ui-corner-bottom");
 
 				start();
 			}
@@ -555,6 +603,8 @@
 		ok( $("#enhancetest").trigger("create").find(".ui-listview").length, "enhancements applied" );
 	});
 
+	module( "Cached Linked List" );
+
 	var findNestedPages = function(selector){
 		return $( selector + " #topmost" ).listview( 'childPages' );
 	};
@@ -563,7 +613,7 @@
 		$.testHelper.pageSequence([
 			function(){
 				//reset for relative url refs
-				$.testHelper.openPage( "#" + location.pathname );
+				$.testHelper.openPage( "#" + home );
 			},
 
 			function(){
@@ -572,7 +622,11 @@
 
 			function(){
 				ok( findNestedPages( "#uncached-nested-list" ).length > 0, "verify that there are nested pages" );
-				$.testHelper.openPage( "#" + location.pathname + "cache-tests/clear.html" );
+				$.testHelper.openPage( "#" + home );
+			},
+
+			function() {
+				$.testHelper.openPage( "#cache-tests/clear.html" );
 			},
 
 			function(){
@@ -587,7 +641,7 @@
 		$.testHelper.pageSequence([
 			function(){
 				//reset for relative url refs
-				$.testHelper.openPage( "#" + location.pathname );
+				$.testHelper.openPage( "#" + home );
 			},
 
 			function(){
@@ -596,7 +650,11 @@
 
 			function(){
 				ok( findNestedPages( "#cached-nested-list" ).length > 0, "verify that there are nested pages" );
-				$.testHelper.openPage( "#" + location.pathname + "cache-tests/clear.html" );
+				$.testHelper.openPage( "#" + home );
+			},
+
+			function() {
+				$.testHelper.openPage( "#cache-tests/clear.html" );
 			},
 
 			function(){
@@ -610,7 +668,7 @@
 		$.testHelper.pageSequence([
 			function(){
 				//reset for relative url refs
-				$.testHelper.openPage( "#" + location.pathname );
+				$.testHelper.openPage( "#" + home );
 			},
 
 			function(){
@@ -619,7 +677,11 @@
 
 			function(){
 				same( $("#cached-nested-list").length, 1 );
-				$.testHelper.openPage("#" + location.pathname + "cache-tests/clear.html");
+				$.testHelper.openPage( "#" + home );
+			},
+
+			function() {
+				$.testHelper.openPage( "#cache-tests/clear.html" );
 			},
 
 			function(){
@@ -634,6 +696,11 @@
 		expect( listPage.find("li").length );
 
 		$.testHelper.pageSequence( [
+			function(){
+				//reset for relative url refs
+				$.testHelper.openPage( "#" + home );
+			},
+
 			function() {
 				$.testHelper.openPage( "#search-filter-test" );
 			},
@@ -648,6 +715,51 @@
 				listPage.find( "input" ).val( "foo" ).trigger( "change" );
 
 				//NOTE beware a poossible issue with timing here
+				start();
+			}
+		]);
+	});
+
+	asyncTest( "nested pages hash key is always in the hash (replaceState)", function(){
+		$.testHelper.pageSequence([
+			function(){
+				//reset for relative url refs
+				$.testHelper.openPage( "#" + home );
+			},
+
+			function(){
+				// https://github.com/jquery/jquery-mobile/issues/1617
+				$.testHelper.openPage("#nested-lists-test");
+			},
+
+			function(){
+				// Click on the link of the third li element
+				$('.ui-page-active li:eq(2) a:eq(0)').click();
+			},
+
+			function(){
+				ok( location.hash.search($.mobile.subPageUrlKey) >= 0 );
+				start();
+			}
+		]);
+	});
+
+	asyncTest( "embedded listview page with nested pages is not removed from the dom", function() {
+		$.testHelper.pageSequence([
+			function() {
+				// open the nested list page
+				same( $("div#nested-list-test").length, 1 );
+				$( "a#nested-list-test-anchor" ).click();
+			},
+
+			function() {
+				// go back to the origin page
+				window.history.back();
+			},
+
+			function() {
+				// make sure the page is still in place
+				same( $("div#nested-list-test").length, 1 );
 				start();
 			}
 		]);
