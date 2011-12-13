@@ -1,8 +1,5 @@
 /*
-* jQuery Mobile Framework : custom "selectmenu" plugin
-* Copyright (c) jQuery Project
-* Dual licensed under the MIT or GPL Version 2 licenses.
-* http://jquery.org/license
+* custom "selectmenu" plugin
 */
 
 (function( $, undefined ) {
@@ -33,7 +30,9 @@
 				"aria-labelledby": buttonId
 			}).attr( "data-" + $.mobile.ns + "theme", widget.options.theme ).appendTo( listbox ),
 
-			header = $( "<div>" ).attr( "data-" + $.mobile.ns + "theme", widget.options.theme ).prependTo( listbox ),
+			header = $( "<div>", {
+				"class": "ui-header ui-bar-" + widget.options.theme
+			}).prependTo( listbox ),
 
 			headerTitle = $( "<h1>", {
 				"class": "ui-title"
@@ -322,7 +321,7 @@
 					// fall into a black hole
 					self.thisPage.unbind( "pagehide.remove" );
 
-					//for webos (set lastscroll using button offset)
+					//for WebOS/Opera Mini (set lastscroll using button offset)
 					if ( scrollTop == 0 && btnOffset > screenHeight ) {
 						self.thisPage.one( "pagehide", function() {
 							$( this ).jqmData( "lastScroll", btnOffset );
@@ -484,7 +483,7 @@
 		});
 	};
 
-	$( "select" ).live( "selectmenubeforecreate", function(){
+	$( document ).delegate( "select", "selectmenubeforecreate", function(){
 		var selectmenuWidget = $( this ).data( "selectmenu" );
 
 		if( !selectmenuWidget.options.nativeMenu ){

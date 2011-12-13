@@ -1,7 +1,5 @@
 /*
-* jQuery Mobile Framework : "dialog" plugin.
-* Copyright (c) jQuery Project
-* Dual licensed under the MIT (MIT-LICENSE.txt) and GPL (GPL-LICENSE.txt) licenses.
+* "dialog" plugin.
 */
 
 (function( $, window, undefined ) {
@@ -68,7 +66,7 @@ $.widget( "mobile.dialog", $.mobile.widget, {
 });
 
 //auto self-init widgets
-$( $.mobile.dialog.prototype.options.initSelector ).live( "pagecreate", function(){
+$( document ).delegate( $.mobile.dialog.prototype.options.initSelector, "pagecreate", function(){
 	$( this ).dialog();
 });
 

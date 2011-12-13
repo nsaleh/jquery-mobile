@@ -1,8 +1,5 @@
 /*
-* jQuery Mobile Framework : core utilities for auto ajax navigation, base tag mgmt,
-* Copyright (c) jQuery Project
-* Dual licensed under the MIT or GPL Version 2 licenses.
-* http://jquery.org/license
+* core utilities for auto ajax navigation, base tag mgmt,
 */
 
 ( function( $, undefined ) {
@@ -1097,12 +1094,16 @@
 
 		// Kill the keyboard.
 		// XXX_jblas: We need to stop crawling the entire document to kill focus. Instead,
-		//            we should be tracking focus with a live() handler so we already have
+		//            we should be tracking focus with a delegate() handler so we already have
 		//            the element in hand at this point.
 		// Wrap this in a try/catch block since IE9 throw "Unspecified error" if document.activeElement
 		// is undefined when we are in an IFrame.
 		try {
-			$( document.activeElement || "" ).add( "input:focus, textarea:focus, select:focus" ).blur();
+			if(document.activeElement && document.activeElement.nodeName.toLowerCase() != 'body') {
+				$(document.activeElement).blur();
+			} else {
+				$( "input:focus, textarea:focus, select:focus" ).blur();
+			}
 		} catch(e) {}
 
 		// If we're displaying the page as a dialog, we don't want the url
@@ -1190,7 +1191,14 @@
 	function findClosestLink( ele )
 	{
 		while ( ele ) {
-			if ( ele.nodeName.toLowerCase() == "a" ) {
+			// Look for the closest element with a nodeName of "a".
+			// Note that we are checking if we have a valid nodeName
+			// before attempting to access it. This is because the
+			// node we get called with could have originated from within
+			// an embedded SVG document where some symbol instance elements
+			// don't have nodeName defined on them, or strings are of type
+			// SVGAnimatedString.
+			if ( ( typeof ele.nodeName === "string" ) && ele.nodeName.toLowerCase() == "a" ) {
 				break;
 			}
 			ele = ele.parentNode;
@@ -1218,7 +1226,7 @@
 	$.mobile._registerInternalEvents = function(){
 
 		//bind to form submit events, handle with Ajax
-		$( "form" ).live('submit', function( event ) {
+		$( document ).delegate( "form", "submit", function( event ) {
 			var $this = $( this );
 			if( !$.mobile.ajaxEnabled ||
 				$this.is( ":jqmData(ajax='false')" ) ) {
@@ -1385,7 +1393,7 @@
 		});
 
 		//prefetch pages when anchors with data-prefetch are encountered
-		$( ".ui-page" ).live( "pageshow.prefetch", function() {
+		$( document ).delegate( ".ui-page", "pageshow.prefetch", function() {
 			var urls = [];
 			$( this ).find( "a:jqmData(prefetch)" ).each(function(){
 				var $link = $(this),

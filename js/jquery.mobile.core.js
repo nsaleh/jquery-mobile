@@ -1,10 +1,6 @@
 /*
-* jQuery Mobile Framework : "core" - The base file for jQm
-* Copyright (c) jQuery Project
-* Dual licensed under the MIT or GPL Version 2 licenses.
-* http://jquery.org/license
+* "core" - The base file for jQm
 */
-
 
 (function( $, window, undefined ) {
 
@@ -156,11 +152,24 @@
 				}
 				e = e.parentNode;
 			}
-			
+
 			// Return the theme letter we found, if none, return the
 			// specified default.
 
 			return ltr || defaultTheme || "a";
+		},
+
+		// TODO the following $ and $.fn extensions can/probably should be moved into jquery.mobile.core.helpers
+		//
+		// Find the closest javascript page element to gather settings data jsperf test
+		// http://jsperf.com/single-complex-selector-vs-many-complex-selectors/edit
+		// possibly naive, but it shows that the parsing overhead for *just* the page selector vs
+		// the page and dialog selector is negligable. This could probably be speed up by
+		// doing a similar parent node traversal to the one found in the inherited theme code above
+		closestPageData: function( $target ) {
+			return $target
+				.closest(':jqmData(role="page"), :jqmData(role="dialog")')
+				.data("page");
 		}
 	});
 

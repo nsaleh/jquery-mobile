@@ -1,14 +1,11 @@
 /*
-* jQuery Mobile Framework : "buttons" plugin - for making button-like links
-* Copyright (c) jQuery Project
-* Dual licensed under the MIT or GPL Version 2 licenses.
-* http://jquery.org/license
+* "buttons" plugin - for making button-like links
 */
+
 ( function( $, undefined ) {
 
 $.fn.buttonMarkup = function( options ) {
 	options = options || {};
-
 	for ( var i = 0; i < this.length; i++ ) {
 		var el = this.eq( i ),
 			e = el[ 0 ],
@@ -75,8 +72,8 @@ $.fn.buttonMarkup = function( options ) {
 			buttonClass += " ui-shadow";
 		}
 
-		el.attr( "data-" + $.mobile.ns + "theme", o.theme )
-			.addClass( buttonClass );
+		e.setAttribute( "data-" + $.mobile.ns + "theme", o.theme );
+		el.addClass( buttonClass );
 
 		buttonInner.className = innerClass;
 		buttonInner.setAttribute("aria-hidden", "true");
@@ -94,11 +91,11 @@ $.fn.buttonMarkup = function( options ) {
 		}
 
 		e.appendChild( buttonInner );
-		
+
 		// TODO obviously it would be nice to pull this element out instead of
 		// retrieving it from the DOM again, but this change is much less obtrusive
 		// and 1.0 draws nigh
-		el.data( 'textWrapper', $( buttonText ) );
+		$.data( e, 'textWrapper', $( buttonText ) );
 	}
 
 	return this;
@@ -116,10 +113,15 @@ function closestEnabledButton( element ) {
     var cname;
 
     while ( element ) {
-        cname = element.className && element.className.split(' ');
-        if ( cname && $.inArray( "ui-btn", cname ) > -1 && $.inArray( "ui-disabled", cname ) < 0 ) {
+		// Note that we check for typeof className below because the element we
+		// handed could be in an SVG DOM where className on SVG elements is defined to
+		// be of a different type (SVGAnimatedString). We only operate on HTML DOM
+		// elements, so we look for plain "string".
+        cname = ( typeof element.className === 'string' ) && (element.className + ' ');
+        if ( cname && cname.indexOf("ui-btn ") > -1 && cname.indexOf("ui-disabled ") < 0 ) {
             break;
         }
+
         element = element.parentNode;
     }
 
@@ -165,7 +167,7 @@ var attachEvents = function() {
 			if ( btn ) {
 				$btn = $( btn );
 				theme = $btn.attr( "data-" + $.mobile.ns + "theme" );
-				$btn.removeClass( "ui-btn-hover-" + theme ).addClass( "ui-btn-up-" + theme );
+				$btn.removeClass( "ui-btn-hover-" + theme  + " ui-btn-down-" + theme ).addClass( "ui-btn-up-" + theme );
 			}
 		}
 	});

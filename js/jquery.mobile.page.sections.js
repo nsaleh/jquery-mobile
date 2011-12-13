@@ -1,8 +1,5 @@
 /*
-* jQuery Mobile Framework : This plugin handles theming and layout of headers, footers, and content areas
-* Copyright (c) jQuery Project
-* Dual licensed under the MIT or GPL Version 2 licenses.
-* http://jquery.org/license
+* This plugin handles theming and layout of headers, footers, and content areas
 */
 
 (function( $, undefined ) {
@@ -14,17 +11,18 @@ $.mobile.page.prototype.options.headerTheme  = "a";
 $.mobile.page.prototype.options.footerTheme  = "a";
 $.mobile.page.prototype.options.contentTheme = null;
 
-$( ":jqmData(role='page'), :jqmData(role='dialog')" ).live( "pagecreate", function( e ) {
+$( document ).delegate( ":jqmData(role='page'), :jqmData(role='dialog')", "pagecreate", function( e ) {
 	
 	var $page = $( this ),
 		o = $page.data( "page" ).options,
+		pageRole = $page.jqmData( "role" ),
 		pageTheme = o.theme;
 	
 	$( ":jqmData(role='header'), :jqmData(role='footer'), :jqmData(role='content')", this ).each(function() {
 		var $this = $( this ),
 			role = $this.jqmData( "role" ),
 			theme = $this.jqmData( "theme" ),
-			contentTheme = theme || o.contentTheme || pageTheme,
+			contentTheme = theme || o.contentTheme || ( pageRole === "dialog" && pageTheme ),
 			$headeranchors,
 			leftbtn,
 			rightbtn,

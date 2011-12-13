@@ -1,8 +1,5 @@
 /*
-* jQuery Mobile Framework : "button" plugin - links that proxy to native input/buttons
-* Copyright (c) jQuery Project
-* Dual licensed under the MIT or GPL Version 2 licenses.
-* http://jquery.org/license
+* "button" plugin - links that proxy to native input/buttons
 */
 
 (function( $, undefined ) {
@@ -49,15 +46,18 @@ $.widget( "mobile.button", $.mobile.widget, {
 					// Add hidden input if it doesn’t already exist.
 					if( $buttonPlaceholder === undefined ) {
 						$buttonPlaceholder = $( "<input>", {
-									type: "hidden",
-									name: $el.attr( "name" ),
-									value: $el.attr( "value" )
-								})
-								.insertBefore( $el );
+							type: "hidden",
+							name: $el.attr( "name" ),
+							value: $el.attr( "value" )
+						}).insertBefore( $el );
 
 						// Bind to doc to remove after submit handling
-						$( document ).submit(function(){
-							 $buttonPlaceholder.remove();
+						$( document ).one("submit", function(){
+							$buttonPlaceholder.remove();
+
+							// reset the local var so that the hidden input
+							// will be re-added on subsequent clicks
+							$buttonPlaceholder = undefined;
 						});
 					}
 				});
